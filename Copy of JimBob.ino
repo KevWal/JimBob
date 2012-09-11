@@ -28,8 +28,8 @@ typedef struct {
   char latbuf[12], lonbuf[12];
   long int alt;  
   byte sats;
-} sent;
-sent s; // instantiate above struct
+} sentance;
+sentance s; // instantiate above struct
 
 // Required for Software Serial port used for debugging as we use the hardware Serial port for the GPS.
 #include <SoftwareSerial.h>
@@ -152,7 +152,6 @@ void loop() {
       DEBUG_PRINT("Giving up waiting after 2 seconds, start again\n")
       return; // go back to the start of loop
     }
-  }
      
   DEBUG_PRINT("While there is data avaliable, pass it to gps.encode\n")
   DEBUG_PRINT("but if gps.encode says we have a full sentance, move on\n")
@@ -182,8 +181,8 @@ void loop() {
   DEBUG_PRINT("Convert time to hhmmss\n")
   gps.get_datetime(&g.date, &g.time, &g.age);
   s.hour = (g.time / 1000000);
-  s.minute = (g.time - (s.hour * 1000000)) / 10000;
-  s.second = (g.time - ((s.hour * 1000000) + (s.minute * 10000)));
+  s.minute = (g.time - (hour * 1000000)) / 10000;
+  s.second = (g.time - ((hour * 1000000) + (minute * 10000)));
   s.second = s.second / 100;  
     
   DEBUG_PRINT("Retrieve +/- lat/long in 100000ths of a degree\n")
@@ -191,31 +190,27 @@ void loop() {
   floatToString(s.latbuf, g.flat, 4, 0);
   floatToString(s.lonbuf, g.flon, 4, 0);
 
-  DEBUG_PRINT("Get Altitude\n")
+  DEBUG_PRINT("Get Altitude\n);
   g.falt = gps.f_altitude();
   s.alt = long(g.falt);
   
-  s.sats = gps.satellites();
+  s.sats = gps.sats();
   
   DEBUG_PRINT("Build the string to send\n")
   make_string();
 
   DEBUG_PRINT("Transmit the data\n")
   rtty_txstring(sentance);
-  
 }
-
-
-
 
 void make_string()
 {
   char checksum[10];
   
-  snprintf(sentance, sizeof(sentance), "$$JIMBOB,%d,%d:%d:%d,%s,%s,%ld", s.id, s.hour, s.minute, s.second, s.latbuf, s.lonbuf, s.alt);
+  snprintf(sentance, sizeof(s), "$$JIMBOB,%d,%d:%d:%d,%s,%s,%ld", s.id, s.hour, s.minute, s.second, s.latbuf, s.lonbuf, s.alt);
 
-  //snprintf(checksum, sizeof(checksum), "*%02X\n", xor_checksum(sentance));
-  snprintf(checksum, sizeof(checksum), "*%04X\n", gps_CRC16_checksum(sentance));
+  //snprintf(checksum, sizeof(checksum), "*%02X\n", xor_checksum(s));
+  snprintf(checksum, sizeof(checksum), "*%04X\n", gps_CRC16_checksum(s));
 
   if (strlen(sentance) > sizeof(sentance) - 4 - 1)  {
 	DEBUG_PRINT("Don't overflow the buffer. You should have made it bigger.\n")
@@ -332,70 +327,6 @@ uint16_t gps_CRC16_checksum (char *string)
  
   return crc;
 }    
-
-
-char* floatToString(char * outstr, double val, byte precision, byte widthp){
-  char temp[16];
-  byte i;
-  // compute the rounding factor and fractional multiplier
-  double roundingFactor = 0.5;
-  unsigned long mult = 1;
-  for (i = 0; i < precision; i++)
-  {
-    roundingFactor /= 10.0;
-    mult *= 10;
-  }
-
-  temp[0]='\0';
-  outstr[0]='\0';
-
-  if(val < 0.0){
-    strcpy(outstr,"-\0");
-    val = -val;
-  }
-
-  val += roundingFactor;
-
-  strcat(outstr, itoa(int(val),temp,10));  //prints the int part
-  if( precision > 0) {
-    strcat(outstr, ".\0"); // print the decimal point
-    unsigned long frac;
-    unsigned long mult = 1;
-    byte padding = precision -1;
-    while(precision--)
-      mult *=10;
-
-    if(val >= 0)
-      frac = (val - int(val)) * mult;
-    else
-      frac = (int(val)- val ) * mult;
-    unsigned long frac1 = frac;
-
-    while(frac1 /= 10)
-      padding--;
-
-    while(padding--)
-      strcat(outstr,"0\0");
-
-    strcat(outstr,itoa(frac,temp,10));
-  }
-
-  // generate space padding
-  if ((widthp != 0)&&(widthp >= strlen(outstr))){
-    byte J=0;
-    J = widthp - strlen(outstr);
-
-    for (i=0; i< J; i++) {
-      temp[i] = ' ';
-    }
-
-    temp[i++] = '\0';
-    strcat(temp,outstr);
-    strcpy(outstr,temp);
-  }
-
-  return outstr;
-}
 
 // UBX Functions
 
