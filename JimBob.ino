@@ -31,6 +31,9 @@ typedef struct {
 } sent;
 sent s; // instantiate above struct
 
+//Build the sentance to Tx in here
+char sentance[100] = "0"; 
+
 // Required for Software Serial port used for debugging as we use the hardware Serial port for the GPS.
 #include <SoftwareSerial.h>
 SoftwareSerial Debugger(11, 12);  //RX, TX - Define pins used for debugger serial out 
@@ -59,12 +62,13 @@ SoftwareSerial Debugger(11, 12);  //RX, TX - Define pins used for debugger seria
 // setup()
 //
 //**********************************************************************************
-
-// Remove once we know rtty_txstringchk works.
-//char datastring[80];
-byte gps_set_sucess = 0; //Does the UBlox module aaccept our command?
  
 void setup() {   
+  
+  // Remove once we know rtty_txstringchk works.
+  //char datastring[80];
+  byte gps_set_sucess = 0; //Does the UBlox module aaccept our command?
+  
   // Initialise the software serial output to 9600 baud for debuging
   Debugger.begin(9600);
   DEBUG_PRINT("Project JimBob\n")
@@ -128,7 +132,7 @@ void setup() {
 //Variables that we use inside loop()
 int wait = 0; //Break out of various loops if we get stuck
 unsigned long lastloopmillis = 0;  //What time did we last go around loop()
-char sentance[100] = "0"; //Build the sentance to Tx in here
+
 
 void loop() {
   
@@ -309,7 +313,7 @@ void rtty_txbit (int bit)
  
   }
  
-  //                  delayMicroseconds(3370); // 300 baud
+  //delayMicroseconds(3370); // 300 baud
   delayMicroseconds(10000); // For 50 Baud uncomment this and the line below. 
   delayMicroseconds(10150); // For some reason you can't do 20150 it just doesn't work.
  
