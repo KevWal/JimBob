@@ -9,11 +9,6 @@ Based on code including NTX2 Radio Test Part 2 and GPS Level Convertor Test Scri
 
 */ 
 
-// Required for GPS processing library, 
-// note we are using a custom modification to V12 of TinyGPS which understaands the PUBX string
-#include <TinyGPS.h>
-TinyGPS gps;
-
 // Tiny GPS Struct
 typedef struct {
   float flat, flon, falt;
@@ -27,7 +22,7 @@ typedef struct {
   int hour, minute, second;
   char latbuf[12], lonbuf[12];
   long int alt;  
-  byte sats;
+  int sats;
 } sent;
 sent s; // instantiate above struct
 
@@ -37,6 +32,11 @@ char sentance[100] = "0";
 // Required for Software Serial port used for debugging as we use the hardware Serial port for the GPS.
 #include <SoftwareSerial.h>
 SoftwareSerial Debugger(11, 12);  // RX, TX - Define pins used for debugger serial out 
+
+// Required for GPS processing library, 
+// note we are using a custom modification to V12 of TinyGPS which understaands the PUBX string
+#include <TinyGPS.h>
+TinyGPS gps;
 
 #define RADIOPIN 8 // The Arduino pin that the NTX2 Tx pin is connected to.
 #define LEDPIN 13 // LED pin
@@ -98,15 +98,15 @@ void setup() {
     delay(100);
     Debugger.println(F("setup() getUBX Ack"));
     gps_set_sucess=getUBX_ACK(setNav);
-    Debugger.print(F("setup() gps_set_sucess = "));
-    Debugger.println(gps_set_sucess, DEC);
+    if(!gps_set_sucess){
+      Debugger.println(F("setup() ERROR gps_set_sucess not set"));
+    }
   }
   gps_set_sucess=0; //reset gps_set_sucess for next time
 
-
-
-  Debugger.println(F("setup() Send a startup message to the Radio"));
-  rtty_txstringchk("JimBob Tracker");
+  //This seems to make loop() never start, so dont send from here
+  //Debugger.println(F("setup() Send a startup message to the Radio"));
+  //rtty_txstringchk("JimBob Tracker");
 
 
 // All of this lot is now in rtty_txstringchk so shouldent be needed, delet once sure it works.
@@ -118,9 +118,9 @@ void setup() {
 // 
 //  rtty_txstring (datastring);
 
-  delay(1000);
   Debugger.println(F("setup() Finished Setup\r\n\r\n\r\n\r\n"));
-
+  delay(2000);
+    
 }
 
 
@@ -132,16 +132,19 @@ void setup() {
 //**********************************************************************************
 
 //Variables that we use inside loop()
-int wait = 0; //Break out of various loops if we get stuck
+
 unsigned long lastloopmillis = 0;  //What time did we last go around loop()
 
 
 void loop() {
+  
+  int wait = 0; //Break out of various loops if we get stuck
+  
   Debugger.println(F("loop()"));
   
-  Debugger.println(F("loop() Dont go around this loop more than once per second"));
+  Debugger.println(F("loop() Dont go around this loop more than once every 3 seconds"));
   Debugger.print(F("loop() "));
-  if (millis() <= (lastloopmillis + 1000)) {
+  if (millis() <= (lastloopmillis + 3000)) {
     Debugger.print(F("Waiting, "));
     delay(100);
   }
@@ -158,13 +161,14 @@ void loop() {
     delay(100);
     wait++;
     if (wait > 20) {
-      Debugger.println(F("loop() Giving up waiting after 2 seconds, start loop() again"));
+      Debugger.println(F("loop() ERROR: Giving up waiting after 2 seconds, start loop() again"));
       return; // go back to the start of loop
     }
   }
      
   Debugger.println(F("loop() While there is data avaliable, pass it to gps.encode"));
   Debugger.println(F("loop() but if gps.encode says we have a full sentance, move on"));
+  Debugger.print(F("loop() Reading data from GPS: "));
   while (Serial.available()) {
     Debugger.print("X");
     if (gps.encode(Serial.read())) {
@@ -175,12 +179,16 @@ void loop() {
   }
   Debugger.println("");
    
-  Debugger.println(F("loop() Convert some of the data from Tiny GPS format to the right format for tx'ing"));
+  Debugger.println(F("loop() Convert some of the data from Tiny GPS format"));
+  Debugger.println(F("loop() to the UKHAS format for tx'ing"));
   // An example senatnce might be
   // $$CALLSIGN,sentence_id,time,latitude,longitude,altitude,optional speed,optional bearing,optional internal temperature,*CHECKSUM\r\n
   //
   // our sentance will be
   // %%JimBob, id, time, lat, lon, alt, sats, *CHECKSUM\r\n
+  //
+  // Before Fix:  $$JIMBOB,1,4294:96:72,1000.0000,1000.0000,1000000,255*8647
+  // With fix: 
   //
   // http://ukhas.org.uk/communication:protocol
     
@@ -210,7 +218,7 @@ void loop() {
 
   Debugger.println(F("loop() Transmit the data"));
   rtty_txstring(sentance);
-  
+
 }
 
 
@@ -220,13 +228,13 @@ void make_string()
 {
   char checksum[10];
   
-  snprintf(sentance, sizeof(sentance), "$$JIMBOB,%d,%d:%d:%d,%s,%s,%ld", s.id, s.hour, s.minute, s.second, s.latbuf, s.lonbuf, s.alt);
+  snprintf(sentance, sizeof(sentance), "$$JIMBOB,%d,%d:%d:%d,%s,%s,%ld,%d", s.id, s.hour, s.minute, s.second, s.latbuf, s.lonbuf, s.alt, s.sats);
 
   //snprintf(checksum, sizeof(checksum), "*%02X\r\n", xor_checksum(sentance));
   snprintf(checksum, sizeof(checksum), "*%04X\r\n", gps_CRC16_checksum(sentance));
 
   if (strlen(sentance) > sizeof(sentance) - 4 - 1)  {
-	Debugger.println(F("make_string() Don't overflow the buffer!"));
+	Debugger.println(F("make_string() ERROR Don't overflow the buffer!"));
         return;
   }
 
@@ -261,21 +269,23 @@ void rtty_txstringchk (char * string)
  
 void rtty_txstring (char * string)
 {
- 
-  /* Simple function to sent a char at a time to 
-   	** rtty_txbyte function. 
-   	** NB Each char is one byte (8 Bits)
-   	*/
+  Debugger.println(F("rtty_txstring()"));
+  
+  Debugger.println(F("rtty_txstring() Simple function to sent a char at a time to rtty_txbyte")); 
+  Debugger.println(F("rtty_txstring() NB Each char is one byte (8 Bits)"));
  
   char c;
  
   c = *string++;
  
+  Debugger.print(F("rtty_txstring() Send: "));
   while ( c != '\0')
   {
+    Debugger.print(c);
     rtty_txbyte (c);
     c = *string++;
   }
+  Debugger.println("");
 }
  
  
@@ -469,7 +479,7 @@ boolean getUBX_ACK(uint8_t *MSG) {
  
     Debugger.println(F("getUBX_ACK() 6 Timeout if no valid response in 3 seconds"));
     if (millis() - startTime > 3000) { 
-      Debugger.println(F("getUBX_ACK() 7 Timedout!"));
+      Debugger.println(F("getUBX_ACK() 7 ERROR Timeout!"));
       return false;
     }
  
@@ -483,7 +493,7 @@ boolean getUBX_ACK(uint8_t *MSG) {
         ackByteID++;
       } 
       else {
-        Debugger.println(F("getUBX_ACK() 11 This ackByteID Incorrect, reset and start again"));
+        Debugger.println(F("getUBX_ACK() 11 ERROR This ackByteID Incorrect, reset and start again"));
         ackByteID = 0;	// Reset and look again, invalid order
       }
  
