@@ -1,12 +1,11 @@
 /*  Project JimBob V0.1
 
-  My first Tracker code
+My first Tracker code
 
-  Based on code including NTX2 Radio Test Part 2 and GPS Level Convertor Test Script.
-  Thanks to all that have helped, Nigelvh DanielRichman, MrScienceMan, DaveAke, etal
+Based on code including NTX2 Radio Test Part 2 and GPS Level Convertor Test Script.
 
-  http://ukhas.org.uk
-  http://ava.upuaut.net/store/
+    http://ukhas.org.uk
+    http://ava.upuaut.net/store/
 
 */ 
 
@@ -28,7 +27,7 @@ typedef struct {
 sent s; // instantiate above struct
 
 // Build the sentance to Tx in here
-char sentance[100] = "0"; //Sentance is currently 50 chars, 17/09/12
+char sentance[100] = "0"; 
 
 // Required for Software Serial port used for debugging as we use the hardware Serial port for the GPS.
 #include <SoftwareSerial.h>
@@ -46,6 +45,7 @@ TinyGPS gps;
 #include <util/crc16.h>
 
 
+
 //*********************************************************************************
 //
 // setup()
@@ -54,6 +54,8 @@ TinyGPS gps;
  
 void setup() {   
   
+  // Remove once we know rtty_txstringchk works.
+  // char datastring[80];
   boolean gps_set_sucess = 0; // Does the UBlox module aaccept our command?
   
   // Initialise the software serial output to 9600 baud for debuging
@@ -138,26 +140,105 @@ void loop() {
   
   int wait = 0; //Break out of various loops if we get stuck
   
-  Debugger.println(F("loop() Start Main Loop"));
+  Debugger.println(F("loop()"));
   
-  Debugger.println(F("loop() Dont go around this loop more than once every 5 seconds"));
+  Debugger.println(F("loop() Dont go around this loop more than once every 3 seconds"));
   Debugger.print(F("loop() "));
-  while (millis() <= (lastloopmillis + 5000)) {
+  while (millis() <= (lastloopmillis + 3000)) {
     Debugger.print(F("Waiting, "));
     delay(500);
   }
   lastloopmillis = millis();
   Debugger.println("");
   
+//  Debugger.println(F("loop() Request Navigation Data from GPS module"));
+//  Serial.println("$PUBX,00*33");
+  
+  // Ublox say the GPS sentance will be here within 1 second, but we dont want to proceed around loop() 
+  // (which would ask for a sentance again) until this sentance is waiting for us
+//  while (!Serial.available()){
+//    Debugger.println(F("loop() Delaying for Ublox to provide data"));
+//    delay(1); // Dont wait too long, we only have a 64 Byte buffer, and 100ms = 96 bytes and 9600 Baud
+//    wait++;
+//    if (wait > 2000) {
+//      Debugger.println(F("loop() ERROR: Giving up waiting after 2 seconds, start loop() again"));
+//      return; // go back to the start of loop()
+//    }
+//  }
+     
+//  Debugger.println(F("loop() While there is data avaliable, pass it to gps.encode"));
+//  Debugger.println(F("loop() but if gps.encode says we have a full sentance, move on"));
+//  Debugger.print(F("loop() Reading data from GPS: "));
+//  while (Serial.available()) {
+//    Debugger.print("X");
+//    if (gps.encode(Serial.read())) {
+//      Debugger.println("");
+//      Debugger.println(F("loop() gps.encode says we have a full sentance, move on"));
+//      // Note this may leave unread data in the Serial buffer?
+//      break;
+//    }
+    //delay(100);
+//  }
+//  
+//  Debugger.println(F("loop() While there is data avaliable, pass it to gps.encode"));
+//  Debugger.println(F("loop() but if gps.encode says we have a full sentance, move on"));
+//  Debugger.print(F("loop() Reading data from GPS: "));
+//
+//  while (full_sentance == 0) {
+//    // wait for character    
+//    while (!Serial.available())  {
+//      
+//    }
+//
+//    Debugger.print("X");
+//
+    // now read
+//    if (gps.encode(Serial.read())) {
+//      Debugger.println("");
+//      Debugger.println(F("loop() gps.encode says we have a full sentance, move on"));
+//      break;
+//    }
+//  }
+
+  
+//  Debugger.println("");
+//  Debugger.println(F("loop() Send gps.encode a final r n to see if that completes the sentance"));
+//  gps.encode('\r');
+//  gps.encode('\n');
+//  if (!gps.encode('\n')) {
+//   Debugger.println(F("loop() ERROR gps.encode still doesn't think we have a full sentance"));
+//    return; // go back to the start of loop()
+//  }
+  
+//  =====
+/*
+  Debugger.println(F("loop() Set a timer for 3 seconds"));
+  unsigned long timer_s = millis() + 3000;
+  
+  Debugger.println(F("loop() Read data from the gps and pass to gps.encode()"));
+  Debugger.print(F("loop() Data: "));
+  while (!gps.encode(Serial.read())) { 
+    Debugger.print("X");
+    delay(5);
+    if(timer_s < millis()){
+      Debugger.println("");
+      Debugger.println(F("loop() ERROR Timed out reading GPS data, gps.encode did not get a full sentence, start loop() again"));
+      return; 
+    }
+  }
+  Debugger.println(""); 
+*/  
+//  =====
+
+//  =====
 
   Debugger.println(F("loop() Request Navigation Data from GPS module"));
-  Serial.println("$PUBX,00*33");  
-  // we may not have much time here to read the data before we overflow the serial buffer
+  Serial.println("$PUBX,00*33");  // we may not have much time to read the data before we overflow the serial buffer
 
 //  Debugger.println(F("loop() Set a timer for 3 seconds"));  // dont hang about printing debug messages here
   unsigned long timer_s = millis() + 3000;
 
-  int c = 0; // char from serial buffer
+  int c; // char from serial buffer
 
   while (true) {
     if (timer_s < millis()) {
@@ -181,9 +262,25 @@ void loop() {
      break; // Break out of this while loop
    }
   }
-  Debugger.println("");  
+Debugger.println("");  
   
- 
+  // This version work, but timing is Citical
+//  Debugger.println(F("loop() Read data from the gps and pass to gps.encode()"));
+//  Debugger.print(F("loop() Data: "));
+//  int c;
+//  do
+//  { 
+//    c = Serial.read();
+//    Debugger.write(c);  //This is critical, if I dont wait the time to write this char out, I send a -1 mid sentance to gps.encode.
+//    if(timer_s < millis()){
+//      Debugger.println("");
+//      Debugger.println(F("loop() ERROR Timed out reading GPS data, gps.encode did not get a full sentence, start loop() again"));
+//      return; 
+//    }
+//  } while (!gps.encode(c));
+//  Debugger.println(""); 
+//  =====  
+  
   Debugger.println(F("loop() Convert some of the data from Tiny GPS format"));
   Debugger.println(F("loop() to the UKHAS format for tx'ing"));
   // An example senatnce might be
@@ -192,13 +289,8 @@ void loop() {
   // our sentance will be
   // %%JimBob, id, time, lat, lon, alt, sats, *CHECKSUM\r\n
   //
-  // Before Valid Data:  $$JIMBOB,1,4294:96:72,1000.0000,1000.0000,1000000,255*8647
-  // Before Fix:         $$JIMBOB,2,0:0:2,0.0000,0.0000,0,0*9CEC
-  // Before Fix:         $$JIMBOB,11,0:1:32,0.0000,0.0000,0,0*18FB
-  // Fix getting closer: $$JIMBOB,37,22:31:34,49.0777,-29.5711,12165,0*7A48
-  // 4 Sats:             $$JIMBOB,70,22:38:8,52.3223,-0.7068,158,4*F492
-  // 5 Sats:             $$JIMBOB,74,22:38:52,52.3226,-0.7064,149,5*24BD
-  // With fix: $$JIMBOB,3,22:23:45,52.3226,-0.7062,130,6*BBFE
+  // Before Fix:  $$JIMBOB,1,4294:96:72,1000.0000,1000.0000,1000000,255*8647
+  // With fix: 
   //
   // http://ukhas.org.uk/communication:protocol
     
@@ -256,14 +348,14 @@ void make_string()
   memcpy(sentance + strlen(sentance), checksum, strlen(checksum) + 1);
 }
 
-/*
+
 void rtty_txstringchk (char * string)
 {
   Debugger.println(F("rtty_txstringchk()"));
   
-  // Take the string passed to us, calculate the checksum, concatenate the checksum
-  // and pass to rttty_txstring
-  
+  /* Take the string passed to us, calculate the checksum, concatenate the checksum
+  ** and pass to rttty_txstring
+  */
   unsigned int checksum_int; // The interger value of the checksum
   char checksum_str[6];  // The string equivilent of the checksum
  
@@ -278,9 +370,9 @@ void rtty_txstringchk (char * string)
  
   Debugger.println(F("rtty_txstringchk() pass the new string to rtty_txstring"));
   rtty_txstring (string);
+  
 }
-*/
-
+ 
 void rtty_txstring (char * string)
 {
   Debugger.println(F("rtty_txstring()"));
@@ -443,7 +535,7 @@ void sendUBX(uint8_t *MSG, uint8_t len) {
   Debugger.println(F("sendUBX()"));
   Debugger.print(F("sendUBX() Byte: "));
   for(int i=0; i<len; i++) {
-    Debugger.print(MSG[i], HEX);
+    Debugger.print(i, DEC);
     Serial.write(MSG[i]);
   }
   Serial.println();
@@ -453,14 +545,14 @@ void sendUBX(uint8_t *MSG, uint8_t len) {
 // Calculate expected UBX ACK packet and parse UBX response from GPS
 boolean getUBX_ACK(uint8_t *MSG) {
   
-  Debugger.println(F("getUBX_ACK()"));
+  Debugger.println(F("getUBX_ACK() 1"));
     
   uint8_t b;
   uint8_t ackByteID = 0;
   uint8_t ackPacket[10];
   unsigned long startTime = millis();
  
-  Debugger.println(F("getUBX_ACK() Construct the expected ACK packet"));  
+  Debugger.println(F("getUBX_ACK() 2 Construct the expected ACK packet"));  
   ackPacket[0] = 0xB5;	// header
   ackPacket[1] = 0x62;	// header
   ackPacket[2] = 0x05;	// class
@@ -472,42 +564,42 @@ boolean getUBX_ACK(uint8_t *MSG) {
   ackPacket[8] = 0;		// CK_A
   ackPacket[9] = 0;		// CK_B
  
-  Debugger.println(F("getUBX_ACK() Calculate the checksums"));
+  Debugger.println(F("getUBX_ACK() 3 Calculate the checksums"));
   Debugger.print(F("getUBX_ACK() Checksums: "));
   for (uint8_t i=2; i<8; i++) {
+    Debugger.print(i, DEC);
     ackPacket[8] = ackPacket[8] + ackPacket[i];
     ackPacket[9] = ackPacket[9] + ackPacket[8];
   }
   Debugger.print(ackPacket[8], HEX);
-  Debugger.print(" ");
   Debugger.print(ackPacket[9], HEX);
   Debugger.println("");
  
   while (1) {
  
-//    Debugger.println(F("getUBX_ACK() Test for success?"));
+    Debugger.println(F("getUBX_ACK() 4 Test for success?"));
     if (ackByteID > 9) {
-      Debugger.println(F("getUBX_ACK() All packets in order!"));
+      Debugger.println(F("getUBX_ACK() 4 All packets in order!"));
       return true;
     }
  
-//    Debugger.println(F("getUBX_ACK() Timeout if no valid response in 3 seconds"));
+    Debugger.println(F("getUBX_ACK() 6 Timeout if no valid response in 3 seconds"));
     if (millis() - startTime > 3000) { 
-      Debugger.println(F("getUBX_ACK() ERROR Timeout!"));
+      Debugger.println(F("getUBX_ACK() 7 ERROR Timeout!"));
       return false;
     }
  
-//    Debugger.println(F("getUBX_ACK() Make sure data is available to read"));
+    Debugger.println(F("getUBX_ACK() 8 Make sure data is available to read"));
     if (Serial.available()) {
       b = Serial.read();
  
-//      Debugger.println(F("getUBX_ACK() Check that bytes arrive in sequence as per expected ACK packet"));
+      Debugger.println(F("getUBX_ACK() 9 Check that bytes arrive in sequence as per expected ACK packet"));
       if (b == ackPacket[ackByteID]) {
-        Debugger.println(F("getUBX_ACK() This ackByteID Correct"));
+        Debugger.println(F("getUBX_ACK() 10 This ackByteID Correct"));
         ackByteID++;
       } 
       else {
-        Debugger.println(F("getUBX_ACK() ERROR This ackByteID Incorrect, reset and start again"));
+        Debugger.println(F("getUBX_ACK() 11 ERROR This ackByteID Incorrect, reset and start again"));
         ackByteID = 0;	// Reset and look again, invalid order
       }
  
