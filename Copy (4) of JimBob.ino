@@ -32,14 +32,14 @@ char sentance[100] = "0"; //Sentance is currently 50 chars, 17/09/12
 
 // Required for Software Serial port used for debugging as we use the hardware Serial port for the GPS.
 #include <SoftwareSerial.h>
-SoftwareSerial Debugger(4, 5);  // RX, TX - Define pins used for debugger serial out 
+SoftwareSerial Debugger(11, 12);  // RX, TX - Define pins used for debugger serial out 
 
 // Required for GPS processing library, 
 // note we are using a custom modification to V12 of TinyGPS which understaands the PUBX string
 #include <TinyGPS.h>
 TinyGPS gps;
 
-#define RADIOPIN 6 // The Arduino pin that the NTX2 Tx pin is connected to.
+#define RADIOPIN 8 // The Arduino pin that the NTX2 Tx pin is connected to.
 #define LEDPIN 13 // LED pin
  
 #include <string.h>
@@ -496,17 +496,11 @@ boolean getUBX_ACK(uint8_t *MSG) {
  
 //      Debugger.println(F("getUBX_ACK() Check that bytes arrive in sequence as per expected ACK packet"));
       if (b == ackPacket[ackByteID]) {
-        Debugger.print(F("getUBX_ACK() This ackByteID Correct, Expected: "));
-        Debugger.print(ackPacket[ackByteID], HEX);
-        Debugger.print(F(" Got: "));
-        Debugger.println(b, HEX);
+        Debugger.println(F("getUBX_ACK() This ackByteID Correct"));
         ackByteID++;
       } 
       else {
-        Debugger.print(F("getUBX_ACK() ERROR This ackByteID Incorrect, Expected: "));
-        Debugger.print(ackPacket[ackByteID], HEX);
-        Debugger.print(F(" Got: "));
-        Debugger.println(b, HEX);
+        Debugger.println(F("getUBX_ACK() ERROR This ackByteID Incorrect, reset and start again"));
         ackByteID = 0;	// Reset and look again, invalid order
       }
  
