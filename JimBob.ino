@@ -23,7 +23,7 @@ typedef struct {
   int hour, minute, second;
   char latbuf[12], lonbuf[12];
   long int alt;  
-  int sats, vin;
+  int sats, vin, vinmv;
 } sent;
 sent s; // instantiate above struct
 
@@ -56,6 +56,7 @@ TinyGPS gps;
 void setup() {   
   
   boolean gps_set_sucess = 0; // Does the UBlox module aaccept our command?
+  int wait = 0;
   
   // Initialise the software serial output to 9600 baud for debuging
   Debugger.begin(9600);
@@ -70,7 +71,7 @@ void setup() {
   digitalWrite(LEDPIN, LOW);
   
   Debugger.println(F("setup() Initialise the GPS Serial at 9600 Baud"));
-  Debugger.println(F("setup() GPS is connected to hardware serial port"));
+  //Debugger.println(F("setup() GPS is connected to hardware serial port"));
   Serial.begin(9600);
   delay(100);
     
@@ -101,11 +102,20 @@ void setup() {
   }
   gps_set_sucess=0; //reset gps_set_sucess for next time
 
+  Debugger.println(F("Transmit some null data for testing"));
+  while (wait <= 50) {
+    wait++;
+    digitalWrite(RADIOPIN, HIGH);                    
+    delay(100);                    
+    digitalWrite(RADIOPIN, LOW);                    
+    delay(100);          
+  }
+
   Debugger.println(F("setup() Transmit Test String"));
   rtty_txstring("Bob v0.1\r\n");
 
   Debugger.println(F("setup() Finished Setup\r\n\r\n\r\n\r\n"));
-  delay(2000);
+  delay(1000);
     
 }
 
@@ -126,9 +136,9 @@ void loop() {
   
   Debugger.println(F("loop() Start Main Loop"));
   
-  Debugger.println(F("loop() Dont go around this loop more than once every 5 seconds"));
+  Debugger.println(F("loop() Dont go around this loop more than once every 3 seconds"));
   Debugger.print(F("loop() "));
-  while (millis() <= (lastloopmillis + 5000)) {
+  while (millis() <= (lastloopmillis + 3000)) {
     Debugger.print(F("Waiting, "));
     delay(500);
   }
@@ -223,9 +233,9 @@ void loop() {
   }
   
   Debugger.print(F("Battery Voltage is: "));
-  s.vin = s.vin / 1.71;  //Floating point arithmetic on an integer, and recording back into the same value all seems to work.
   s.vin = analogRead(VINPIN);
-  Debugger.println(s.vin, DEC);
+  s.vinmv = s.vin / 1.55;  //Floating point arithmetic on an integer, seems to work?
+  Debugger.println(s.vinmv, DEC);
   
   Debugger.println(F("loop() Build the string to send"));
   make_string();
@@ -242,7 +252,7 @@ void make_string()
 {
   char checksum[10];
   
-  snprintf(sentance, sizeof(sentance), "$$BOB,%d,%d:%d:%d,%s,%s,%ld,%d,%d", s.id, s.hour, s.minute, s.second, s.latbuf, s.lonbuf, s.alt, s.sats, s.vin);
+  snprintf(sentance, sizeof(sentance), "$$BOB,%d,%d:%d:%d,%s,%s,%ld,%d,%d", s.id, s.hour, s.minute, s.second, s.latbuf, s.lonbuf, s.alt, s.sats, s.vinmv);
 
   //snprintf(checksum, sizeof(checksum), "*%02X\r\n", xor_checksum(sentance));
   snprintf(checksum, sizeof(checksum), "*%04X\r\n", gps_CRC16_checksum(sentance));
