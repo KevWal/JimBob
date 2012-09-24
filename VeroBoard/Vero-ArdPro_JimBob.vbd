@@ -1,0 +1,411 @@
+[VeroDes board definition file v0.01]
+
+DEFBOARD
+{
+   filename    "Vero-ArdPro_Template.vbd"
+
+   created     "18/09/2012 22:18:16"
+   lastsaved   "21/09/2012 19:18:07"
+
+   boardsize   20 holes, 20 tracks
+
+   components  28
+   {
+      defcompo 1
+      devid    "CN_SINGLEPIN"
+      label    "VCC"
+      lblopp   True
+      position 1,7
+      rotation none
+      userdev  False
+
+      defcompo 2
+      devid    "CN_SINGLEPIN"
+      label    "VCC2"
+      lblopp   True
+      position 1,8
+      rotation none
+      userdev  False
+
+      defcompo 3
+      devid    "CN_SINGLEPIN"
+      label    "GND"
+      lblopp   True
+      position 1,10
+      rotation none
+      userdev  False
+
+      defcompo 4
+      devid    "CN_SINGLEPIN"
+      label    "Vin"
+      lblopp   True
+      position 1,11
+      rotation none
+      userdev  False
+
+      defcompo 5
+      devid    "CN_SINGLEPIN"
+      label    "A0"
+      lblopp   True
+      position 1,13
+      rotation none
+      userdev  False
+
+      defcompo 6
+      devid    "CN_SINGLEPIN"
+      label    "SCL-A5"
+      lblopp   True
+      position 1,18
+      rotation none
+      userdev  False
+
+      defcompo 7
+      devid    "CN_SINGLEPIN"
+      label    "RX0"
+      lblopp   False
+      position 20,18
+      rotation none
+      userdev  False
+
+      defcompo 8
+      devid    "CN_SINGLEPIN"
+      label    "TX1"
+      lblopp   False
+      position 20,17
+      rotation none
+      userdev  False
+
+      defcompo 9
+      devid    "CN_SINGLEPIN"
+      label    "5"
+      lblopp   False
+      position 20,13
+      rotation none
+      userdev  False
+
+      defcompo 10
+      devid    "CN_SINGLEPIN"
+      label    "6-TXD"
+      lblopp   False
+      position 20,12
+      rotation none
+      userdev  False
+
+      defcompo 11
+      devid    "CN_SINGLEPIN"
+      label    "7"
+      lblopp   False
+      position 20,11
+      rotation none
+      userdev  False
+
+      defcompo 12
+      devid    "NTX2"
+      label    "NTX2"
+      lblopp   True
+      position 8,5
+      rotation none
+      userdev  True
+
+      defcompo 13
+      devid    "CN_SINGLEPIN"
+      label    "GND2"
+      lblopp   True
+      position 1,9
+      rotation none
+      userdev  False
+
+      defcompo 14
+      devid    "RE_STD"
+      label    "R5"
+      lblopp   False
+      position 5,7
+      rotation none
+      value    "4k7"
+      userdev  False
+
+      defcompo 15
+      devid    "RE_STD"
+      label    "R4"
+      lblopp   False
+      position 4,9
+      rotation none
+      value    "4k7"
+      userdev  False
+
+      defcompo 16
+      devid    "CN_SINGLEPIN"
+      label    "Vin - A2"
+      lblopp   True
+      position 1,15
+      rotation none
+      userdev  False
+
+      defcompo 17
+      devid    "RE_STD2"
+      label    "R26"
+      lblopp   False
+      position 14,15
+      rotation none
+      value    "4k7"
+      userdev  False
+
+      defcompo 18
+      devid    "RE_2"
+      label    "R57"
+      lblopp   False
+      position 6,11
+      rotation none
+      value    "10k"
+      userdev  True
+
+      defcompo 19
+      devid    "RE_STD"
+      label    "R58"
+      lblopp   False
+      position 3,10
+      rotation none
+      value    "10k"
+      userdev  False
+
+      defcompo 20
+      devid    "CN_SINGLEPIN"
+      label    "CN1"
+      lblopp   False
+      position 18,14
+      rotation none
+      userdev  False
+
+      defcompo 21
+      devid    "CN_SINGLEPIN"
+      label    "CN2"
+      lblopp   False
+      position 18,15
+      rotation none
+      userdev  False
+
+      defcompo 22
+      devid    "CN_SINGLEPIN"
+      label    "CN3"
+      lblopp   False
+      position 18,16
+      rotation none
+      userdev  False
+
+      defcompo 23
+      devid    "CN_SINGLEPIN"
+      label    "SDA-A4"
+      lblopp   True
+      position 1,17
+      rotation none
+      userdev  False
+
+      defcompo 24
+      devid    "CN_SINGLEPIN"
+      label    "A3"
+      lblopp   True
+      position 1,16
+      rotation none
+      userdev  False
+
+      defcompo 25
+      devid    "RE_STD7"
+      label    "R3"
+      lblopp   False
+      position 18,12
+      rotation left
+      value    "20k"
+      userdev  False
+
+      defcompo 26
+      devid    "IC_TRANSISTOR"
+      label    "t1"
+      lblopp   False
+      position 15,16
+      rotation invert
+      userdev  False
+
+      defcompo 27
+      devid    "CN_SINGLEPIN"
+      label    "2"
+      lblopp   False
+      position 20,15
+      rotation invert
+      userdev  False
+
+      defcompo 28
+      devid    "MAX6"
+      label    "GPS"
+      lblopp   False
+      position 12,9
+      rotation none
+      userdev  True
+   }
+
+   wirelinks   9
+   {
+      deflink  1
+      startpos 3,6
+      endpos   3,9
+
+      deflink  2
+      startpos 3,12
+      endpos   3,14
+
+      deflink  3
+      startpos 16,4
+      endpos   16,17
+
+      deflink  4
+      startpos 17,5
+      endpos   17,18
+
+      deflink  5
+      startpos 15,9
+      endpos   15,7
+
+      deflink  6
+      startpos 13,6
+      endpos   13,8
+
+      deflink  7
+      startpos 13,9
+      endpos   13,16
+
+      deflink  8
+      startpos 14,8
+      endpos   14,14
+
+      deflink  9
+      startpos 9,5
+      endpos   9,12
+   }
+
+   trackbreaks 14
+   {
+      defbreak 1
+      position 7,14
+
+      defbreak 2
+      position 11,5
+
+      defbreak 3
+      position 11,9
+
+      defbreak 4
+      position 11,8
+
+      defbreak 5
+      position 15,17
+
+      defbreak 6
+      position 15,18
+
+      defbreak 7
+      position 15,13
+
+      defbreak 8
+      position 15,11
+
+      defbreak 9
+      position 15,12
+
+      defbreak 10
+      position 12,15
+
+      defbreak 11
+      position 12,14
+
+      defbreak 12
+      position 12,16
+
+      defbreak 13
+      position 7,15
+
+      defbreak 14
+      position 7,16
+   }
+
+   annotations 0
+}
+
+
+; ###########################
+; ### EMBEDDED COMPONENTS ###
+; ###########################
+
+DEFCOMPONENT
+{
+   name        "RadioMetrix NTX2"
+   identifier  "NTX2"
+   category    "Miscellaneous"
+   pins        7
+   {
+      pin      1 at 21,5 home anno "TXD"
+      pin      2 at 21,6 anno "GND"
+      pin      3 at 21,7 anno "VCC"
+      pin      4 at 21,8 anno "EN"
+      pin      5 at 21,14 anno "RFGND2"
+      pin      6 at 21,15 anno "RFOUT"
+      pin      7 at 21,16 anno "RFGND"
+   }
+   rects       2
+   {
+      rect     1 at 92,144 - 1,1
+      rect     2 at 184,12 - 60,204
+   }
+   circs       0
+   lines       0
+}
+
+DEFCOMPONENT
+{
+   name        "Resistor (over 3 holes)"
+   identifier  "RE_2"
+   category    "Resistors"
+   pins        2
+   {
+      pin      1 at 1,1 home
+      pin      2 at 1,5 float
+   }
+   rects       1
+   {
+      rect     1 at 4,24 - 16,24
+   }
+   circs       0
+   lines       2
+   {
+      line     1 at 12,12 - 0,12
+      line     2 at 12,48 - 0,12
+   }
+}
+
+DEFCOMPONENT
+{
+   name        "uBlox Max 6 with Sartel"
+   identifier  "MAX6"
+   category    "Miscellaneous"
+   pins        4
+   {
+      pin      1 at 1,3 anno "TXD"
+      pin      2 at 1,4 anno "RXD"
+      pin      3 at 1,7 anno "GND"
+      pin      4 at 1,8 home anno "Vcc"
+   }
+   rects       2
+   {
+      rect     1 at 0,0 - 108,108
+      rect     2 at 100,32 - 92,72
+   }
+   circs       0
+   lines       0
+}
+t     2 at 100,32 - 92,72
+   }
+   circs       0
+   lines       0
+}
+
+; ###################
+; ### END OF FILE ###
+; ###################
