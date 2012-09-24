@@ -23,7 +23,7 @@ typedef struct {
   int hour, minute, second;
   char latbuf[12], lonbuf[12];
   long int alt;  
-  int sats;
+  int sats, vin;
 } sent;
 sent s; // instantiate above struct
 
@@ -41,6 +41,7 @@ TinyGPS gps;
 
 #define RADIOPIN 6 // The Arduino pin that the NTX2 Tx pin is connected to.
 #define LEDPIN 13 // LED pin
+#define VINPIN 2 // Vin Sensor pin
  
 #include <string.h>
 #include <util/crc16.h>
@@ -101,7 +102,7 @@ void setup() {
   gps_set_sucess=0; //reset gps_set_sucess for next time
 
   Debugger.println(F("setup() Transmit Test String"));
-  rtty_txstring("JimBob v0.1\r\n");
+  rtty_txstring("Bob v0.1\r\n");
 
   Debugger.println(F("setup() Finished Setup\r\n\r\n\r\n\r\n"));
   delay(2000);
@@ -221,6 +222,11 @@ void loop() {
     digitalWrite(LEDPIN, LOW);
   }
   
+  Debugger.print(F("Battery Voltage is: "));
+  s.vin = s.vin / 1.71;  //Floating point arithmetic on an integer, and recording back into the same value all seems to work.
+  s.vin = analogRead(VINPIN);
+  Debugger.println(s.vin, DEC);
+  
   Debugger.println(F("loop() Build the string to send"));
   make_string();
 
@@ -236,7 +242,7 @@ void make_string()
 {
   char checksum[10];
   
-  snprintf(sentance, sizeof(sentance), "$$JIMBOB,%d,%d:%d:%d,%s,%s,%ld,%d", s.id, s.hour, s.minute, s.second, s.latbuf, s.lonbuf, s.alt, s.sats);
+  snprintf(sentance, sizeof(sentance), "$$BOB,%d,%d:%d:%d,%s,%s,%ld,%d,%d", s.id, s.hour, s.minute, s.second, s.latbuf, s.lonbuf, s.alt, s.sats, s.vin);
 
   //snprintf(checksum, sizeof(checksum), "*%02X\r\n", xor_checksum(sentance));
   snprintf(checksum, sizeof(checksum), "*%04X\r\n", gps_CRC16_checksum(sentance));
