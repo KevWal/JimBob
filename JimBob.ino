@@ -234,7 +234,7 @@ void loop() {
   
   Debugger.print(F("Battery Voltage is: "));
   s.vin = analogRead(VINPIN);
-  s.vinmv = s.vin / 1.55;  //Floating point arithmetic on an integer, seems to work?
+  s.vinmv = s.vin / 0.155;  //Floating point arithmetic on an integer, seems to work?
   Debugger.println(s.vinmv, DEC);
   
   Debugger.println(F("loop() Build the string to send"));
@@ -254,8 +254,8 @@ void make_string()
   
   snprintf(sentance, sizeof(sentance), "$$BOB,%d,%d:%d:%d,%s,%s,%ld,%d,%d", s.id, s.hour, s.minute, s.second, s.latbuf, s.lonbuf, s.alt, s.sats, s.vinmv);
 
-  //snprintf(checksum, sizeof(checksum), "*%02X\r\n", xor_checksum(sentance));
-  snprintf(checksum, sizeof(checksum), "*%04X\r\n", gps_CRC16_checksum(sentance));
+  //snprintf(checksum, sizeof(checksum), "*%02X\n", xor_checksum(sentance));
+  snprintf(checksum, sizeof(checksum), "*%04X\n", gps_CRC16_checksum(sentance));
 
   if (strlen(sentance) > sizeof(sentance) - 4 - 1)  {
 	Debugger.println(F("make_string() ERROR Don't overflow the buffer!"));
