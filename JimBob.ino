@@ -14,6 +14,7 @@
 typedef struct {
   float flat, flon, falt;
   unsigned long age, time, date;
+  int internal_t, external_t;
 } gpsd;
 gpsd g; // instantiate above struct
 
@@ -24,6 +25,7 @@ typedef struct {
   char latbuf[12], lonbuf[12];
   long int alt;  
   int sats, vin, vinmv;
+  int internal_t, external_t;
 } sent;
 sent s; // instantiate above struct
 
@@ -38,6 +40,26 @@ SoftwareSerial Debugger(4, 5);  // RX, TX - Define pins used for debugger serial
 // note we are using a custom modification to V12 of TinyGPS which understaands the PUBX string
 #include <TinyGPS.h>
 TinyGPS gps;
+
+// Onewire Temp Sensor
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
+// Data wire is plugged into pin 3 on the Arduino
+#define ONE_WIRE_BUS 3
+
+// Setup a oneWire instance to communicate with any OneWire devices
+OneWire oneWire(ONE_WIRE_BUS);
+
+// Pass our oneWire reference to Dallas Temperature. 
+DallasTemperature sensors(&oneWire);
+
+// Assign the addresses of your 1-Wire temp sensors.
+// See the tutorial on how to obtain these addresses:
+// http://www.hacktronics.com/Tutorials/arduino-1-wire-address-finder.html
+
+DeviceAddress internalThermometer = { 0x28, 0x02, 0x01, 0xDD, 0x03, 0x00, 0x00, 0xC5 };
+DeviceAddress externalThermometer = { 0x28, 0x78, 0x82, 0x36, 0x04, 0x00, 0x00, 0xB0 };
 
 #define RADIOPIN 6 // The Arduino pin that the NTX2 Tx pin is connected to.
 #define LEDPIN 13 // LED pin
@@ -102,6 +124,12 @@ void setup() {
   }
   gps_set_sucess=0; //reset gps_set_sucess for next time
 
+  Debugger.println(F("Start up the OneWire library"));
+  sensors.begin();
+  Debugger.println(F("Set the Temp resolution to 9 bit"));
+  sensors.setResolution(internalThermometer, 9);
+  sensors.setResolution(externalThermometer, 9);
+
   Debugger.println(F("Transmit some null data for testing"));
   while (wait <= 50) {
     wait++;
@@ -144,6 +172,15 @@ void loop() {
   }
   lastloopmillis = millis();
   Debugger.println("");
+  
+  Debugger.println(F("loop() Request Temperature Data"));
+  sensors.requestTemperatures();
+  delay(750);
+  g.internal_t = sensors.getTempC(internalThermometer);
+  g.external_t = sensors.getTempC(externalThermometer);
+  
+  s.internal_t = g.internal_t;
+  s.external_t = g.external_t;
   
 
   Debugger.println(F("loop() Request Navigation Data from GPS module"));
@@ -252,7 +289,7 @@ void make_string()
 {
   char checksum[10];
   
-  snprintf(sentance, sizeof(sentance), "$$BOB,%d,%d:%d:%d,%s,%s,%ld,%d,%d", s.id, s.hour, s.minute, s.second, s.latbuf, s.lonbuf, s.alt, s.sats, s.vinmv);
+  snprintf(sentance, sizeof(sentance), "$$BOB,%d,%d:%d:%d,%s,%s,%ld,%d,%d,%d,%d", s.id, s.hour, s.minute, s.second, s.latbuf, s.lonbuf, s.alt, s.sats, s.vinmv, s.internal_t, s.external_t);
 
   //snprintf(checksum, sizeof(checksum), "*%02X\n", xor_checksum(sentance));
   snprintf(checksum, sizeof(checksum), "*%04X\n", gps_CRC16_checksum(sentance));
