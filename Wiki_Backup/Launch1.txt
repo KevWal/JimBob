@@ -1,0 +1,113 @@
+====== Launch 1 ======
+
+This page tracks Launch 1.
+
+====== Bill of Materials ======
+
+
+===== Tracker =====
+
+[[projects:jimbob:bob|$$Bob]]
+
+===== Power =====
+
+Energizer Ultimate Lithium AA or AAA - purchased
+
+Battery Box AA or AAA, 2, 3 or 4 cells - various options purchased
+
+===== Photos Camera =====
+
+== Canon Power Shot A810 ==
+
+[[http://www.dpreview.com/products/canon/compacts/canon_a810|DP Review]] - Purchased
+
+  * 28mm wide angle (wider than most)
+  * 2 x AA Batteries
+  * 171g inc Batteries, before weight reduction program :)
+
+== Camera mount options ==
+
+  * Nylon threaded rod - [[http://blog.jgc.org/2011/02/gaga-1-voiding-warranty-for-great.html]]
+  * Mounting inside a polystyrene ball - 1 hollow ball, 1 sold ball carved out.
+
+== Canon CHDK ==
+
+The Cannon Cameras can be controlled by a firmware extension called CHDK
+
+  * [[http://chdk.wikia.com/wiki/A810|CHDK]]
+
+The FAQ entry [[http://chdk.wikia.com/wiki/FAQ#Q._How_can_I_get_the_original_firmware_version_number_of_my_camera.3F|here]] to get the firmware version wouldn't work for me, so I took a picture and downloaded a program to extract it from the exif info (1.00D).
+
+I then downloaded [[http://mighty-hoernsche.de/bins/a810-100d-1.1.0-2201-full_ALPHA.zip]] from [[http://mighty-hoernsche.de/|http://mighty-hoernsche.de/]] and installed it on a Bootable SD card using the method described [[http://chdk.wikia.com/wiki/Prepare_your_SD_card|here]].
+
+Finally I downloaded the example script for HAB use from here: [[http://blog.jgc.org/2010/09/gaga-1-2766-tedious-photographs-and-log.html]].
+
+===== Video Camera =====
+
+Mini DVR 808 #16 V2 -Lens D Car Key Chain Micro Camera - Purchased, in the post.
+
+
+
+===== Balloon =====
+
+Looking at using a 500g balloon, requiring 1.29 cu m of Helium.  Purchased from [[http://www.randomengineering.co.uk/Random_Aerospace/Balloons.html|Random Engineering]].
+
+Detailed data is here:  [[guides:balloon_data]]
+
+
+===== Enclosure =====
+
+Poly Box / Poly Balls?
+
+
+===== Helium =====
+
+2 options I am considering:
+
+  * http://www.ebay.co.uk/itm/320985242876 - No rolling rental charges, but needs collection from Kidsgrove
+  * http://balloonhelium.co.uk/main/pricing - Local collection, but rental charges if kept for more than 1 month.
+
+== Cylinder Valve ==
+
+Normal balloon filling valves are not ideal for our use.  Looking for one that has a tap and can have a pipe attached.
+
+== Balloon Filling Device ==
+
+Need to make a hose pipe attached to a waste pipe type fitting, ie:  [[guides:fill_tube]]
+
+===== Parachute =====
+
+Sizing chart here - [[guides:parachute_sizing_chart]]
+
+The [[guides:balloon_data]] 'keep it simple' table suggests 18" or 24".
+
+The drag formula reconed about 30" 
+
+One option for Chutes is here: http://www.randomengineering.co.uk/Random_Aerospace/Parachutes.html, I went direct to https://spherachutes.storesecured.com/.
+
+
+===== Cord =====
+
+
+
+====== Weight ======
+
+Starting to think about the weight of the payload:
+
+GPS Tracker: 
+
+Batteries:  14.5g per AA, 7.6g per AAA
+
+Video Cam: Mini DVR 808 #16 17g
+
+Photos Cam:  100 to 200g
+
+
+Total could be : 60g AA, 40g Tracker?, 17g #16 Video Cam, 150g photos cam, 20g packing = 300g
+
+
+====== Testing ======
+
+
+
+Freezer Test

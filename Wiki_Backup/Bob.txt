@@ -1,0 +1,256 @@
+====== Tracker $$Bob ======
+
+This is a document describing my first Near Space Balloon Tracker, now known as "Bob".
+
+Any questions you can get in touch with me at kevin at unseen dot org.
+
+====== Hardware ======
+
+Tracker Hardware:
+
+  * [[http://www.skpang.co.uk/catalog/arduino-pro-328-33v8mhz-p-486.html|Arduino Pro 328 - 3.3V/8MHz from SKPang]]
+  * [[http://ava.upuaut.net/store/index.php?route=product/product&path=71_63&product_id=62|NTX2 434.075Mhz Radio Module from HAB Supplies]]
+  * [[http://ava.upuaut.net/store/index.php?route=product/product&path=59_60&product_id=51|Assembled uBLOX MAX-6 Breakout With Sarantel Antenna]]
+  * [[http://datasheets.maxim-ic.com/en/ds/DS18B20.pdf|DS18B20 Temp Sensors]]
+
+===== Arduino Pro =====
+
+I started by doing the classic [[http://arduino.cc/en/Tutorial/blink|Blinking LED]] test on the Arduino.
+
+Interestingly my Arduino Pro board has the 16 MHz box ticked on the board, but I believe this is a mistake - The crystal on the board is labelled 80.D (8Mhz?) and it works fine when programmed through Arduino 1.0.1 as a 3.3v, 8MHz w/ATmega328.
+
+I use a non-standard USB to serial converter, which means I have to press the reset button on the Arduino just a tad after the PC says 'Uploading'.
+
+After those couple of issues, I had the LED blinking nicely :)
+
+===== Radio - NTX 2 =====
+
+Having tracked a launch yesterday and today (see [[guides:tracking_guide|Tracking Guide]]) I was keen to get transmitting myself, so I started by following the [[guides:linkingarduinotontx2|Linking an Arduino to a Radiometrix NTX2 Transmitter]] guide.
+
+I used an 18K Ohm resister as R3 (the 20K Ohm value detailed in the guide isn't in the common E12 series that I had) which gave me a shift I believe of around 600Hz.
+
+My Yaesu VR-500 receiver does not seem to be the best at cleanly decoding as I had mirrors of the signal in several places.
+
+I found the best signal at 434.0720 Mhz, compared to the 434.075 written on the module.
+
+For reference I also find the signal at 434.0745 MHz, but this version appears to be a reversed signal, requiring the "Rv" button to be pressed in dl-fldigi to decode correctly.
+
+**Update**, In the version built on Vero board I have used 2 x 4k7 and 1 x 20k, as per the guide, which gives me a shift of 620Hz at 20 deg C.  On a E4000 dongle using SDR# ([[guides:sdr_tracker]]) I get a nice clean signal at 434.073Mhz.  At about -20 deg C (in the freezer!) the shift is down to around 530Hz with a frequency of 434.074Mhz
+
+===== uBLOX MAX-6 Breakout With Sarantel Antenna =====
+
+With an aim to keep weight down I was tempted to purchase the [[http://ava.upuaut.net/store/index.php?route=product/product&path=59_60&product_id=52|Assembled uBLOX MAX-6 Pico Breakout with Chip Scale Antenna]] but was advised to go with the Sarantel Antenna version as it is much more reliable at gaining a locked GPS signal - I don't want to loose my first payload to a weak GPS signal!
+
+I didn't need the version with level converters as I has specifically purchased a 3.3v Arduino board.
+
+There are two UKHAS related guides to the Max-6:
+
+  * [[http://ava.upuaut.net/store/wiki/doku.php?id=levelconvertor|ublox Max-6 With Level Converter]]
+  * [[guides:ublox6|uBlox NEO-6Q / uBlox MAX-6Q]]
+
+Both use some of the same code example.
+
+For initial testing I connected:
+
+Max-6 - Arduino Pro
+  * VCC --> VCC
+  * GND --> GND
+  * TXD --> Pin 4
+  * RXD --> Pin 5
+
+and used the Software Serial code example from the links above.
+
+Initially it did not work and I had to do a little debugging from 'first principles' with a 'scope, disconnecting the signal wires, finding the signal out of Arduino pin 5, connecting that into the Max-6 Pin RXD, finding the signal now coming out of the Max-6 pin TXD and connecting that back into the Arduino pin 4, and then magic, it works.  I obviously had the signal wires plugged incorrectly somehow first time around.
+
+The output, at 9,600 baud from the Arduino's hardware serial port, via the same FTDI -> serial converter we use for programming the Arduino:
+
+<code c>
+$GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
+$GPGSV,1,1,00*79
+$GPGLL,,,,,,V,N*64
+$GPRMC,,V,,,,,,,,,,N*53
+$GPVTG,,,,,,,,,N*30
+$GPGGA,,,,,,0,00,99.99,,,,,,*48
+$GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
+$GPGSV,1,1,00*79
+$GPGLL,,,,,,V,N*64
+</code>
+
+For live tracking use it is recommended that you talk to the GPS module using the Arduino hardware serial port, on pins Zero and One.
+
+===== Physical Layout =====
+
+Initially I built my prototype on a breadboard shield like this:
+
+{{projects:jimbob:breadboard_jimbob_real.jpg?400}}
+
+Then once I had the main ideas sorted I laid it out on Vero Board, using [[http://www.heyrick.co.uk/software/verodes/|VeroDes]] software - a very simple but perfectly adequate Vero Board design program.  The VBD file is in the JimBob repo.
+
+{{:projects:jimbob:ardpro_jimbob_design.jpg?400 }}
+
+{{ :projects:jimbob:ardpro_jimbob_real.jpg.jpg?400x285}}
+===== Antenna =====
+
+One way to make an antenna is using the Coax Cable as [[projects:hadie|Hadie]] did:
+
+Only RG58 coax was used, with the outer insulator stripped back just over 1/4 wavelength long and the shield carefully untwisted and split into the four radials. I left the inner conductor and insulator as is, just placing a straw over them to keep it from flexing during flight. The radials where taped to the bottom of the box with gaffer tape, and an SMA socket crimped onto the other end of the coax.
+
+The improvement over the last flight was dramatic, with reception of telemetry and image data from over 500km away! The small mag-mount on the car was more than enough to receive telemetry during the chase, only weakening when we drove underneath the payload to get ahead of it. We didn't need to use the yagi at all this time.
+
+See a picture [[http://www.flickr.com/photos/fsphil/5642986472/in/set-72157626013096240|here]].
+
+
+===== Power =====
+
+=== Onboard Mega Regulator ===
+
+The 3.3v Regulator on the Arduino Pro 328 provides Max 150mA output.
+
+The NTX2 Radio Module requires 18mA.
+
+The uBLOX MAX-6 GPS requires up to 67mA, but with an average of 41mA.
+
+The Mega328 requires XXX (I can't find a figure?)
+
+150 - 18 - 67 = 65mA left for the Mega worst case.
+
+150 - 18 - 41 = 91mA left for the Mega during normal operation.
+
+=== Buck Boost Regulator ===
+
+I need to provide 3.3v to the board, this could be provided by 3 batteries (each down to 1.1v), alternatively I am considering adding a [[https://www.sparkfun.com/products/10255|Buck Boost]] converter, allowing me to use as little as 1 cell.  This will also get the very last ounce of life out of the batteries.
+
+=== Batteries ===
+
+The UKHAS [[ideas:power_supply|Ideas:Power_Supply]] page recommends Lithium Iron DiSulfide AA or AAA batteries e.g. Energizer L91 (AA) or L92 (AAA).
+
+The L91 AA's supply around 3,000 mAh with a discharge rate of up to 200 mAh down to around 0 C.  At -40 C this capacity reduces to around 1,000 mAh, unless the discharge rate is kept to 25 mAhm when it returns to the full 3,000 mAh.
+
+Lithium Iron DiSulfide batteries provide just above 1.5v when full, the majority of power is delivered by 1.2v, with a little power left down to 0.6v according to the graphs [[http://www.batteryshowdown.com/results-lo.html|here]]
+
+A requirement for 150mAh at 3.3v = 0.5W per hour.  4 AA cells provides between 1,000 mAh x 1.5v x 4 = 6W and 3,000 mAh x 1.5v x 4 = 18W.
+
+Ignoring inefficiencies this results in a run time of between 12 hours and 36 hours.  
+
+The L92 AAA version supplies around 1/2 of this capacity, or between 6 hours and 18 hours.
+
+
+=== Measure Voltage ===
+
+To enable monitoring of the voltage I have added a resister divider network to allow me to measure any voltage between 0v and 6.6v on an Analog input pin.
+
+  * 0v - 10k - A2 - 10k - Vin
+
+
+
+
+
+====== Software ======
+
+===== GPS Software =====
+
+For in flight use I only want the GPGGA NMEA sentence, as this contains all the data we need.  I also don't want it every second, ideally I'd like to ask for it when I am ready and need it.  
+
+As described [[guides:ublox6#navigation_data|here]], luckily the Ublox6 based GPS modules implement a proprietary NMEA extension in the form of a polled sentence which reports all navigation parameters of interest (to us at least) in a single proprietary sentence when requested. Using this provides advantages in that you can request an update exactly when you need it, and you only need to parse one specific sentence to capture latitude, longitude, altitude, speed, course, etc. 
+
+
+===== TinyGPS-UBX =====
+
+The PUBX sentence will need manipulation before transmitting, and the [[http://arduiniana.org/libraries/tinygps/|TinyGPS]] library already has lots of code to do that.  Unfortunately, natively, as of Version 12, it doesn't understand the PUBX sentence from the Max-6.  A modified version, based on V9 is available [[http://ukhas.org.uk/_media/code:tinygps.zip|here]], but this is stated as not compatible with the latest Arduino v1.0.1.
+
+I have taken TinyGPS V12 from [[http://arduiniana.org/libraries/tinygps/|http://arduiniana.org/libraries/tinygps/]] and applied the modifications that were made by Terry Baume on V9 to V12.  The official home of the updated library is in GIT [[https://github.com/KevWal/TinyGPS|TinyGPS]], a zip file can be downloaded here [[https://github.com/KevWal/TinyGPS/zipball/master]].
+
+This has the advantage of also gaining the latest features in Version 12:
+
+  * Maarten Lamers’ distance_to() as a static function.
+  * Arduino 1.0 compatibility
+  * Added satellites(), hdop(), course_to(), and cardinal()
+
+This library has been tested with the included software test harness and within my tracker code in a hardware tracker.  It has not yet flown.
+===== Transmitted Sentence =====
+
+When I build my sentence to send to the radio, I need to use this format:  [[communication:protocol|communication:protocol]]
+
+An example sentence that I produce:
+
+$$BOB,178,18:36:35,51.5089,-0.7323,80,7,381*20C9
+
+
+===== Gotchas =====
+
+I had all sorts of problems reading the PUBX string from the GPS and passing it reliably to gps.encode.  The points below may help others:
+
+  * The Serial buffer on the Arduino is only 64 Bytes, the PUBX string is significantly longer.  If you run out of buffer you loose parts of the string and hence gps.encode never gets a full sentence.  
+
+  * Writing a debugging string out of a debugging serial port takes time - you may overflow your buffer whilst printing debug messages!
+
+  * If you try and read from the serial port to quickly, before the next character is available, the you will get a -1.  A -1 mid PUBX string will confuse gps.encode()
+
+Taking all that into account, you need to think very carefully about your loop of reading data in from the GPS and passing it to gps.encode to make sure you deal with all the possible conditions, and yet don't get stuck if something should go wrong.
+
+Additionally:
+
+  * Printing debug strings can take up significant memory and cause the Arduino to reboot.  Use the F() Macro to print from Flash not from RAM - Debugger.println(F("Blah"));
+
+===== DS18B20 Temp Sensors =====
+
+I have two DS18B20 Temp Sensors, one on a lead for external temp, the other in its native package for internal use.
+
+To talk to them I will use:
+
+  * Dallas_Temperature_Control_Library v3.7.2  from here [[http://milesburton.com/Main_Page?title=Dallas_Temperature_Control_Library]]
+  * OneWire Library v2.1 from here [[http://www.pjrc.com/teensy/td_libs_OneWire.html]]
+
+I found the sensor addresses using the code here: http://www.hacktronics.com/Tutorials/arduino-1-wire-address-finder.html
+
+  * The internal one has address: 0x28, 0x02, 0x01, 0xDD, 0x03, 0x00, 0x00, 0xC5
+  * The external one has address: 0x28, 0x78, 0x82, 0x36, 0x04, 0x00, 0x00, 0xB0
+
+I then used this code to test the 2 sensors:
+
+  * [[http://www.hacktronics.com/Tutorials/arduino-1-wire-tutorial.html]]
+
+===== Code =====
+
+The Code lives here:  [[https://github.com/KevWal/JimBob||https://github.com/KevWal/JimBob]]
+
+
+
+
+====== Notes for future ======
+
+Add Barometer, Internal & External temperature sensors.
+
+ http://pastebin.com/py8K3uzy
+
+PicoAtlas - used NTX2 and ublox [[projects:picoatlas:picoatlasi]]
+
+apex Alpha, ntx2 etc, [[https://github.com/ApexHAB/apex-alpha]]
+
+and another - [[http://www.pegasushabproject.org.uk/wiki/doku.php/missions:atlas:atlas1:code]]
+
+code here - [[https://github.com/jamescoxon/Misc-Projects/blob/master/pico3.pde]]
+
+and here - [[https://github.com/stilldavid/high-altitude/blob/master/balloon_minimal/balloon_minimal.pde]]
+
+
+Lots of projects to read through here - [[http://www.pegasushabproject.org.uk/wiki/doku.php]]
+
+is this one relevant? - [[https://github.com/ajhutton/TinyTracker/tree/master/tracker]]
+
+
+
+
+I need to check for these common coding errors:  [[guides:common_coding_errors_payload_testing]]
+
+Lots of reading here - [[http://www.daveakerman.com/]]
+
+and here - [[http://habe.acudworth.co.uk/blog/]]
+
+and links to work through here - [[http://projecthorus.org/?page_id=331]]
+
+
+
+
+
+Way way in the future, I might like to try this encoding, to reduce the number of sentences people have to throw away:  [[http://www.qsl.net/zl1bpu/MFSK/DEX.htm]]

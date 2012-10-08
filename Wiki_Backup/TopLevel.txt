@@ -1,0 +1,16 @@
+====== Project JimBob ======
+
+This is the master page for all of my Near Space Ballooning projects
+
+====== Trackers ====== 
+
+  * [[projects:jimbob:bob|Bob]]
+
+
+====== Launches ====== 
+
+  * [[projects:jimbob:launch1|Launch 1]]
+
+
+Any questions you can get in touch with me at kevin at unseen dot org.
+
