@@ -241,6 +241,15 @@ void loop() {
   // And closer          $$BOB,3060,9:29:51,52.3205,-0.7067,24,0,5045,26,22*8F1A
   // 6 Sats:             $$BOB,3512,11:19:58,52.3228,-0.7062,118,6,5064,27,23*E012
   //
+  // changed to using dtostrf*(x, 8, 6, y)
+  //
+  // No Time             $$BOB,7,00:01:33,0.000000,0.000000,0,0,4135,26,25*3701
+  // Time only           $$BOB,9,16:43:30,0.000000,0.000000,0,0,4135,26,25*2DA3
+  // First sign of data  $$BOB,20,16:46:12,35.539410,6.760060,7185,0,4135,26,24*6E5B 
+  // First fix           $$BOB,23,16:46:57,52.322529,0.706500,137,4,4135,26,24*33B6  // should have a - in
+  // Better fix          $$BOB,37,16:50:27,52.322632,0.706100,140,5,4148,26,24*5C34  // should have a - in
+  // 7 sats              $$BOB,142,19:04:08,52.322762,-0.706140,125,7,4090,27,28*DA13
+
   // http://ukhas.org.uk/communication:protocol
     
   Debugger.println(F("loop() Increment sentance id, a unique id for each sentance"));
@@ -255,9 +264,18 @@ void loop() {
     
   Debugger.println(F("loop() Retrieve +/- lat/long in 100000ths of a degree"));
   gps.f_get_position(&g.flat, &g.flon);
-  floatToString(s.latbuf, g.flat, 4, 0);
-  floatToString(s.lonbuf, g.flon, 4, 0);
+//  This is code I inheritied  
+//  floatToString(s.latbuf, g.flat, 6, 0);
+//  floatToString(s.lonbuf, g.flon, 6, 0);
 
+//  this is one way recomended but it just prints question marks for me - http://ukhas.org.uk/guides:common_coding_errors_payload_testing  
+//  snprintf(s.latbuf, 12, "%.6f", g.flat);
+//  snprintf(s.lonbuf, 12, "%.6f", g.flon);  
+
+//Note this was originally listed incorrectly as dstrtof on the wiki
+  dtostrf(g.flat, 8, 6, s.latbuf);
+  dtostrf(g.flon, 8, 6, s.lonbuf);
+  
   Debugger.println(F("loop() Get Altitude"));
   g.falt = gps.f_altitude();
   s.alt = long(g.falt);
@@ -403,6 +421,7 @@ uint16_t gps_CRC16_checksum (char *string)
   return crc;
 }    
 
+/*
 
 char* floatToString(char * outstr, double val, byte precision, byte widthp){
   char temp[16];
@@ -466,6 +485,7 @@ char* floatToString(char * outstr, double val, byte precision, byte widthp){
 
   return outstr;
 }
+*/
 
 // UBX Functions
 
