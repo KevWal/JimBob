@@ -40,11 +40,40 @@ The FAQ entry [[http://chdk.wikia.com/wiki/FAQ#Q._How_can_I_get_the_original_fir
 
 I then downloaded [[http://mighty-hoernsche.de/bins/a810-100d-1.1.0-2201-full_ALPHA.zip]] from [[http://mighty-hoernsche.de/|http://mighty-hoernsche.de/]] and installed it on a Bootable SD card using the method described [[http://chdk.wikia.com/wiki/Prepare_your_SD_card|here]].
 
-Finally I downloaded the example script for HAB use from here: [[http://blog.jgc.org/2010/09/gaga-1-2766-tedious-photographs-and-log.html]].
+Finally I downloaded the example script for HAB use from here: [[http://blog.jgc.org/2010/09/gaga-1-2766-tedious-photographs-and-log.html]]. The script required several changes, some of the CHDK settings don't work, or work differently on the A810, and I added a line to turn the display back-light off to save power (no external AV socket control of back-light on the A810).  The script is in my GitHub Repo with the tracker code.
 
+== SD Card ==
+
+Each picture takes aprox 4Mb.  With a 4Gb SD card that is ~1,000 pictures.  A flight of up to 4 hours gives around 4 pictures a minute, or 15 seconds between pictures.  With a 8Gb SD Card that is ~2,000 pictures.  A flight of up to 4 hours gives around 8 pictures a minute, or 7 seconds between pictures.
+
+== Freezer Test ==
+
+The script was told to delay 10 seconds between pictures, on a fresh set of Energizer L91 AA's and with an empty 8Gb SD card and then placed in the freezer, with a torch so that he camera was not struggling to focus in the dark.
+
+The camera was removed over 7 hours later, and was still taking pictures.  It took an average of 3 pictures per minute, starting at 13 to 15 seconds between pictures, ending at 25 to 27 seconds between pictures.  The underlying additional delay (3 to 5 seconds) is due to an added delay from the backlight turn off code, and the time it takes to actually take a picture.  The growing delay over time I can only guess - reducing battery voltage, reducing light from the torch, freezing over of the lens (so it took time to decide it couldn't focus)?
+
+It took 1,256 pictures in total, using 2.5Gb of space, leaving 4.8Gb remaining.  The batteries started at 3107mv and ended at 2174mv.  The rate of reduction in voltage was growing in the log, showing that the batteries were nearing the end of their life at that temperature.
+
+{{ :projects:jimbob:cameragraph.png?direct&900 |}}
 ===== Video Camera =====
 
-Mini DVR 808 #16 V2 -Lens D Car Key Chain Micro Camera - Purchased, in the post.
+Mini DVR 808 #16 V2 -Lens D Car Key Chain Micro Camera - Purchased
+
+16Bb Micro SD Card - Purchased
+
+At 7Mbps with sound recording on, the camera used 1.95GB to record 35 mins of video before the battery was flat.
+
+  * 3.5v x 0.2a = 0.7w/35 mins = 1.2w/hours power consumption
+  * 1.4v x 2.0a = 2.8w * 2 cells = 5.6w/hours available from 2 x AA's
+  * 5.6w / 1.2w = 4.6hours + the in built 35mins = 5 hours run time.
+
+  * 1.95Gb / 35mins * 60mins = 3.35Gb per hour
+  * 16Gb / 3.35Gb per hour = 4.7 hours recording space
+
+I used the [[http://www.mytempfiles.info/nr16/index.html|NR16 utility]] to upgrade the firmware to MOV 0.41, set the camera time, turn audio recording off and increase the data rate to 10Mbps.
+
+I have purchase an [[http://www.ebay.co.uk/itm/271075900284|external AA battery pack]] to provide the power required for a 3 to 4 hour flight.  
+
 
 
 
