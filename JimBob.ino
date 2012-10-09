@@ -30,7 +30,7 @@ typedef struct {
 sent s; // instantiate above struct
 
 // Build the sentance to Tx in here
-char sentance[100] = "0"; //Sentance is currently 50 chars, 17/09/12
+char sentance[100] = "0"; //Sentance is currently up to 63 chars, 09/010/12
 
 // Required for Software Serial port used for debugging as we use the hardware Serial port for the GPS.
 #include <SoftwareSerial.h>
@@ -57,12 +57,11 @@ DallasTemperature sensors(&oneWire);
 // Assign the addresses of your 1-Wire temp sensors.
 // See the tutorial on how to obtain these addresses:
 // http://www.hacktronics.com/Tutorials/arduino-1-wire-address-finder.html
-
 DeviceAddress internalThermometer = { 0x28, 0x02, 0x01, 0xDD, 0x03, 0x00, 0x00, 0xC5 };
 DeviceAddress externalThermometer = { 0x28, 0x78, 0x82, 0x36, 0x04, 0x00, 0x00, 0xB0 };
 
 #define RADIOPIN 6 // The Arduino pin that the NTX2 Tx pin is connected to.
-#define LEDPIN 13 // LED pin
+#define LEDPIN 13 // LED pin - used to indicate GPS Fix
 #define VINPIN 2 // Vin Sensor pin
  
 #include <string.h>
@@ -106,7 +105,7 @@ void setup() {
   Serial.println("$PUBX,40,GSA,0,0,0,0*4E");
   Serial.println("$PUBX,40,RMC,0,0,0,0*47");
   
-  Debugger.println(F("setup() Finally turn off GGA as we are going to poll for that"));
+  Debugger.println(F("setup() Finally turn off GGA as we are going to poll for PUBX instead"));
   Serial.println("$PUBX,40,GGA,0,0,0,0*5A");
    
   Debugger.println(F("setup() Set Flight Mode using UBX code, as we hope to be going over 12km high"));
@@ -140,7 +139,7 @@ void setup() {
   }
 
   Debugger.println(F("setup() Transmit Test String"));
-  rtty_txstring("Bob v0.1\r\n");
+  rtty_txstring("Bob v0.1\n");
 
   Debugger.println(F("setup() Finished Setup\r\n\r\n\r\n\r\n"));
   delay(1000);
@@ -179,10 +178,10 @@ void loop() {
   g.internal_t = sensors.getTempC(internalThermometer);
   g.external_t = sensors.getTempC(externalThermometer);
   
+  // I dont do any manipulation of temp, but follow the same routine as with all the data incase I need to.
   s.internal_t = g.internal_t;
   s.external_t = g.external_t;
   
-
   Debugger.println(F("loop() Request Navigation Data from GPS module"));
   Serial.println("$PUBX,00*33");  
   // we may not have much time here to read the data before we overflow the serial buffer
@@ -211,7 +210,7 @@ void loop() {
    if(gps.encode(c)) {
      Debugger.println(""); 
      Debugger.println(F("loop() gps.encode() says we have a full sentance"));
-     break; // Break out of this while loop
+     break; // Break out of this while(true) loop
    }
   }
   Debugger.println("");  
@@ -233,11 +232,14 @@ void loop() {
   // 5 Sats:             $$JIMBOB,74,22:38:52,52.3226,-0.7064,149,5*24BD
   // With fix:           $$JIMBOB,3,22:23:45,52.3226,-0.7062,130,6*BBFE
   //
-  // New Examples
+  // our new sentance will be
+  // %%JimBob, id, time, lat, lon, alt, sats, mv, int_temp, ext_temp*CHECKSUM\n
+  // 
   // No Fix:             $$BOB,4,0:0:49,0.0000,0.0000,0,0,5038,25,24*D592
   // Time only:          $$BOB,42,21:13:32,0.0000,0.0000,0,0,5045,27,23*4E8E
   // Fix getting closer  $$BOB,218,21:54:56,53.7650,-30.2871,13872,0,5032,27,23*8941
   // And closer          $$BOB,3060,9:29:51,52.3205,-0.7067,24,0,5045,26,22*8F1A
+  // 6 Sats:             $$BOB,3512,11:19:58,52.3228,-0.7062,118,6,5064,27,23*E012
   //
   // http://ukhas.org.uk/communication:protocol
     
@@ -260,13 +262,12 @@ void loop() {
   g.falt = gps.f_altitude();
   s.alt = long(g.falt);
   
+  Debugger.println(F("loop() Get Number of Sats: "));
   s.sats = gps.satellites();
-  
-  Debugger.print(F("loop() Sats: "));
   Debugger.print(s.sats, DEC);
   Debugger.println("");
   
-  // If we have 5 or moresats, turn the LED on to indicate.
+  Debugger.println(F("loop() If 5 or more sats, turn LED on"));
   if (s.sats >= 5) {
    digitalWrite(LEDPIN, HIGH); 
   }
@@ -275,7 +276,7 @@ void loop() {
     digitalWrite(LEDPIN, LOW);
   }
   
-  Debugger.print(F("Battery Voltage is: "));
+  Debugger.print(F("loop() Battery Voltage is: "));
   s.vin = analogRead(VINPIN);
   s.vinmv = s.vin / 0.155;  //Floating point arithmetic on an integer, seems to work?
   Debugger.println(s.vinmv, DEC);
@@ -295,7 +296,8 @@ void make_string()
 {
   char checksum[10];
   
-  snprintf(sentance, sizeof(sentance), "$$BOB,%d,%d:%d:%d,%s,%s,%ld,%d,%d,%d,%d", s.id, s.hour, s.minute, s.second, s.latbuf, s.lonbuf, s.alt, s.sats, s.vinmv, s.internal_t, s.external_t);
+  // Time must be padded
+  snprintf(sentance, sizeof(sentance), "$$BOB,%d,%02d:%02d:%02d,%s,%s,%ld,%d,%d,%d,%d", s.id, s.hour, s.minute, s.second, s.latbuf, s.lonbuf, s.alt, s.sats, s.vinmv, s.internal_t, s.external_t);
 
   //snprintf(checksum, sizeof(checksum), "*%02X\n", xor_checksum(sentance));
   snprintf(checksum, sizeof(checksum), "*%04X\n", gps_CRC16_checksum(sentance));
@@ -309,30 +311,7 @@ void make_string()
   memcpy(sentance + strlen(sentance), checksum, strlen(checksum) + 1);
 }
 
-/*
-void rtty_txstringchk (char * string)
-{
-  Debugger.println(F("rtty_txstringchk()"));
-  
-  // Take the string passed to us, calculate the checksum, concatenate the checksum
-  // and pass to rttty_txstring
-  
-  unsigned int checksum_int; // The interger value of the checksum
-  char checksum_str[6];  // The string equivilent of the checksum
- 
-  Debugger.println(F("rtty_txstringchk() Calculate the checksum for this datastring"));
-  checksum_int = gps_CRC16_checksum(string);
-  
-  Debugger.println(F("rtty_txstringchk() Convert the checksum to a string in the right format"));
-  sprintf(checksum_str, "*%04X\r\n", checksum_int);
-  
-  Debugger.println(F("rtty_txstringchk() Concat the checksum string with the original string"));
-  strcat(string,checksum_str);
- 
-  Debugger.println(F("rtty_txstringchk() pass the new string to rtty_txstring"));
-  rtty_txstring (string);
-}
-*/
+
 
 void rtty_txstring (char * string)
 {
